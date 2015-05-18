@@ -1,0 +1,15 @@
+/tmp
+
+*.jpg
+*.png
+*.gif
+*.asta
+*.mp3
+*.ogg
+*.wave
+*.avi
+*.DS_Store
+*.apk
+*.db
+*.spec
+*.pyc
