@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import cv2
-import sys
+import sys, codecs
 import os
 import glob
 import pylab as plt
 import copy
+import math
+from numpy.random import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
@@ -55,11 +57,20 @@ class Image(QDialog):
         button8.setGeometry(50, 25, 100, 50)
         self.connect(button8, SIGNAL('clicked()'), self.mozaiku)
 
+        button9 = QPushButton(u'ポアソンノイズ')
+        button9.setGeometry(50, 25, 100, 50)
+        self.connect(button9, SIGNAL('clicked()'), self.poisson_noise)
+
         lab1 = QLabel(u'分配器選択')
         lab1.setGeometry(50, 25, 100, 50)
 
         self.combo1 = QComboBox()
         self.combo1.addItems(glob.glob("./*.xml"))
+
+        lab2 = QLabel(u'ポアソンノイズの平均値')
+        lab2.setGeometry(50, 25, 100, 50)
+
+        self.spin1 = QSpinBox()
 
         vbox = QVBoxLayout()
 
@@ -71,6 +82,9 @@ class Image(QDialog):
         vbox.addWidget(button4)
         vbox.addWidget(button5)
         vbox.addWidget(button8)
+        vbox.addWidget(button9)
+        vbox.addWidget(lab2)
+        vbox.addWidget(self.spin1)
         vbox.addWidget(lab1)
         vbox.addWidget(self.combo1)
 
@@ -107,6 +121,7 @@ class Image(QDialog):
         self.gray_image()
         #判別分析法
         th,t_im = cv2.threshold(self.gray,0,255,cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        cv2.putText(t_im, str(th), (10,15), cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,0,255),1)
         print u"閾値:"+str(th)
         cv2.imshow("threshold",t_im)
 
@@ -126,7 +141,21 @@ class Image(QDialog):
             im_m[y:y+h, x:x+w] = im_temp
         cv2.imshow("mozaiku",im_m)
 
+    def poisson_noise(self):
+        im_p = copy.deepcopy(self.img)
+        height, width = im_p.shape[:2]
+        w = 0
+        for h in xrange(int(height)):
+            while int(width) >= w | self.spin1.value() != 0:
+                p_data = poisson(lam=self.spin1.value())
+                w+=int(p_data)
+                try: im_p[h,w] = [0,0,0]
+                except: pass
+            w = 0
+        cv2.imshow("poisson_noise",im_p)
+
 if __name__ == "__main__":
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
     app = QApplication(sys.argv)
     wi = Image()
     wi.show()
